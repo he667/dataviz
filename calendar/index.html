@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Dataviz fine grained calendar</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</head>
+<body>
+   <div class="container">
+
+      <div class="page-header">
+        <h1>A fine grained calendar view with embedded data</h1>
+        <p class="lead">This is a small example to track activity type in a calendar view from D3.js. Each case is a day, each day is split in 4 : Morning 1, Morning 2, AfterNoon 1, AfterNoon 2. Data is embedded into the document, so I don't need a server to do D3 stuffs.</p>
+      </div>
+
+<style>
+#csvdata {
+    display: none;
+}
+</style>
+
+
+
+
+<pre id="csvdata">
+Date,Morning1,Morning2,AfterNoon1,AfterNoon2
+2016-10-01,0,1,1,2
+2016-09-30,1,1,2,3
+2016-09-29,2,2,3,1
+2016-09-28,3,8,8,9
+2016-09-27,4,4,5,1
+2016-09-24,5,5,6,1
+2016-09-23,6,1,2,3
+2016-09-22,7,4,5,9
+2016-09-21,8,5,8,7
+2016-09-20,9,8,7,7
+2016-09-17,10,5,3,1
+2016-09-16,11,2,5,7
+2016-09-15,12,1,2,3
+2016-09-14,13,7,8,2
+2016-09-13,14,2,4,8
+2016-09-10,15,5,7,1
+2016-09-09,16,6,9,1
+2016-09-08,17,3,1,7
+2016-09-07,18,0,1,0
+2016-09-03,19,0,9,4
+2017-09-02,0,6,8,7
+</pre>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var width = 1200,
+    height = 160,
+    cellSize = 20;
+
+var formatPercent = d3.format(".1%");
+
+var color = d3.scaleQuantize()
+    .domain([0, 20])
+    .range(["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837"]);
+
+var svg = d3.select("body")
+  .selectAll("svg")
+  .data(d3.range(2016, 2018))
+  .enter().append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
+
+svg.append("text")
+    .attr("transform", "translate(-6," + cellSize * 3.5 + ")rotate(-90)")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 10)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d; });
+
+var rect = svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#ccc")
+  .selectAll("rect")
+  .data(function(d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+  .enter().append("rect")
+    .attr("width", cellSize / 2)
+    .attr("height", cellSize / 2 )
+    .attr("x", function(d) { return d3.timeWeek.count(d3.timeYear(d), d) * cellSize; })
+    .attr("y", function(d) { return d.getDay() * cellSize + cellSize / 2 ; })
+    .datum(d3.timeFormat("%Y-%m-%d"));
+
+var rect2 = svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#ccc")
+  .selectAll("rect")
+  .data(function(d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+  .enter().append("rect")
+    .attr("width", cellSize / 2)
+    .attr("height", cellSize / 2 )
+    .attr("x", function(d) { return d3.timeWeek.count(d3.timeYear(d), d) * cellSize; })
+    .attr("y", function(d) { return d.getDay() * cellSize  ; })
+    .datum(d3.timeFormat("%Y-%m-%d"));
+
+var rect3 = svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#ccc")
+  .selectAll("rect")
+  .data(function(d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+  .enter().append("rect")
+    .attr("width", cellSize / 2)
+    .attr("height", cellSize / 2 )
+    .attr("x", function(d) { return d3.timeWeek.count(d3.timeYear(d), d) * cellSize + cellSize / 2; })
+    .attr("y", function(d) { return d.getDay() * cellSize  ; })
+    .datum(d3.timeFormat("%Y-%m-%d"));
+
+
+var rect4 = svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#ccc")
+  .selectAll("rect")
+  .data(function(d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+  .enter().append("rect")
+    .attr("width", cellSize / 2)
+    .attr("height", cellSize / 2 )
+    .attr("x", function(d) { return d3.timeWeek.count(d3.timeYear(d), d) * cellSize + cellSize / 2; })
+    .attr("y", function(d) { return d.getDay() * cellSize + cellSize / 2 ; })
+    .datum(d3.timeFormat("%Y-%m-%d"));
+
+svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke", "#000")
+  .selectAll("path")
+  .data(function(d) { return d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+  .enter().append("path")
+    .attr("d", pathMonth);
+
+
+
+var raw = d3.select("#csvdata").text();
+var parsed = d3.csvParse(raw);
+
+  var data = d3.nest()
+      .key(function(d) { return d.Date; })
+      .rollup(function(d) { return d[0].Morning1; })
+    .object(parsed);
+
+      var data2 = d3.nest()
+      .key(function(d) { return d.Date; })
+      .rollup(function(d) { return d[0].Morning2; })
+    .object(parsed);
+       var data3 = d3.nest()
+      .key(function(d) { return d.Date; })
+      .rollup(function(d) { return d[0].AfterNoon1; })
+    .object(parsed);
+       var data4 = d3.nest()
+      .key(function(d) { return d.Date; })
+      .rollup(function(d) { return d[0].AfterNoon2; })
+    .object(parsed);
+
+  rect.filter(function(d) { return d in data; })
+      .attr("fill", function(d) { return color(data[d]); })
+    .append("title")
+      .text(function(d) { return d + ": " + formatPercent(data[d]); });
+
+  rect2.filter(function(d) { return d in data2; })
+      .attr("fill", function(d) { return color(data2[d]); })
+    .append("title")
+      .text(function(d) { return d + ": " + formatPercent(data2[d]); });
+  rect3.filter(function(d) { return d in data2; })
+      .attr("fill", function(d) { return color(data3[d]); })
+    .append("title")
+      .text(function(d) { return d + ": " + formatPercent(data3[d]); });
+  rect4.filter(function(d) { return d in data2; })
+      .attr("fill", function(d) { return color(data4[d]); })
+    .append("title")
+      .text(function(d) { return d + ": " + formatPercent(data4[d]); });
+
+function pathMonth(t0) {
+  var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
+      d0 = t0.getDay(), w0 = d3.timeWeek.count(d3.timeYear(t0), t0),
+      d1 = t1.getDay(), w1 = d3.timeWeek.count(d3.timeYear(t1), t1);
+  return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize
+      + "H" + w0 * cellSize + "V" + 7 * cellSize
+      + "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize
+      + "H" + (w1 + 1) * cellSize + "V" + 0
+      + "H" + (w0 + 1) * cellSize + "Z";
+}
+
+</script>
+</div>
+
+</body>
